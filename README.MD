@@ -1,0 +1,1 @@
+A simple application for the pinephone to turn on the flashlight when the phone is shaken.
