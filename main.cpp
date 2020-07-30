@@ -26,8 +26,29 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 
+#include <cstdio>
+#include <iostream>
+#include <memory>
+#include <stdexcept>
+#include <string>
+#include <array>
+
+#include <dirent.h>
+
 #define THRESHOLD 32000
 
+std::string exec(const char* cmd) {
+    std::array<char, 128> buffer;
+    std::string result;
+    std::unique_ptr<FILE, decltype(&pclose)> pipe(popen(cmd, "r"), pclose);
+    if (!pipe) {
+        throw std::runtime_error("popen() failed!");
+    }
+    while (fgets(buffer.data(), buffer.size(), pipe.get()) != nullptr) {
+        result += buffer.data();
+    }
+    return result;
+}
 
 //reads file and converts to int
 int ftoi(char* path)
@@ -50,11 +71,53 @@ int ftoi(char* path)
 	return std::stoi(buffer);
 }
 
+//find file containing string in dir
+bool find(char* path, char* contains, char* newPath)
+{
+    DIR *dir;
+	struct dirent *ent;
+
+	if ((dir = opendir (path)) != NULL) {
+		bool found = false;
+
+		while ((ent = readdir (dir)) != NULL) {
+			if(strstr(ent->d_name, contains) != NULL)
+			{
+                sprintf(newPath, "%s/%s", path, ent->d_name);
+                closedir (dir);
+				return true;
+			}
+		}
+		closedir (dir);
+        return false;
+	}
+
+}
+
 int main()
 {
-    bool flash_on = false; //flashlight state
-    int last_y_accel = ftoi("/sys/bus/i2c/drivers/inv-mpu6050-i2c/2-0068/iio\:device2/in_accel_y_raw"); //the last accel value, initialized to current accel value
 
+    char accel_path[256];
+
+    //scan for accelerometer
+    if(find("/sys/bus/i2c/drivers/inv-mpu6050-i2c", "0068", accel_path))
+    {
+        if(find(accel_path, "iio\:device", accel_path))
+        {
+            sprintf(accel_path, "%s/in_accel_y_raw", accel_path);
+        }else{
+            printf("could not find accel path\n");
+            return 1;
+        }
+    }else{
+        printf("could not find accel path\n");
+        return 1;
+    }
+
+    printf("%s\n", accel_path);
+
+    bool flash_on = false; //flashlight state
+    int last_y_accel = ftoi(accel_path); //the last accel value, initialized to current accel value
     struct timeval start, now;
 	long mtime, seconds, useconds = 0; 
 
@@ -67,7 +130,7 @@ int main()
     while(true)
     {
         //update accel value
-        int y_accel = ftoi("/sys/bus/i2c/drivers/inv-mpu6050-i2c/2-0068/iio\:device2/in_accel_y_raw");
+        int y_accel = ftoi(accel_path);
 
         gettimeofday(&now, NULL);
 
