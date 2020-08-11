@@ -36,7 +36,11 @@
 
 #include <dirent.h>
 
-#define THRESHOLD 32000
+#define SHAKE_THRESHOLD 32000
+#define TWIST_THRESHOLD 15000
+
+char twist_command[256];
+char shake_command[256];
 
 //reads file and converts to int
 int ftoi(char* path)
@@ -165,31 +169,85 @@ void vibrate(int durationMs, int strength)
 	close(fd);
 }
 
-
-int main()
+//get the value of a given argument
+int get_arg(int argc, char **argv, char *arg_name, char *arg_value)
 {
-
-    char accel_path[256];
-
-    //scan for accelerometer
-    if(find("/sys/bus/i2c/drivers/inv-mpu6050-i2c", "0068", accel_path))
+    for(int i = 1; i < argc; i++)
     {
-        if(find(accel_path, "iio:device", accel_path))
+        if(strcmp(argv[i], arg_name) == 0 && i < argc-1)
         {
-            sprintf(accel_path, "%s/in_accel_y_raw", accel_path);
-        }else{
-            printf("could not find accel path\n");
+            sprintf(arg_value, argv[i+1]);
+            return 0;
+        }else if(strcmp(argv[i], arg_name) == 0 && i == argc-1)
+        {
+            return 2;
+        }
+    }
+    return 1;
+}
+
+void usage(char *name)
+{
+    printf("Usage: %s [--shake_cmd <cmd>] [--twist_cmd <cmd>]\n");
+    printf("\t--shake_cmd\tpath to cmd or 'none' to disable. default: /usr/bin/toggleflash\n");
+    printf("\t--twist_cmd\tpath to cmd or 'none' to disable. default: /usr/bin/pinhole\n");
+    exit(1);
+}
+
+int main(int argc, char **argv)
+{
+    char IMU_path[256];
+
+    char gyro_x_path[256];
+    char accel_y_path[256];
+
+    int ret = get_arg(argc, argv, "--shake_cmd", shake_command);
+
+     if(ret == 1){
+        sprintf(shake_command, "/usr/bin/toggleflash");
+    }else if(ret == 2)
+    {
+        usage(argv[0]);
+    }
+
+    ret = get_arg(argc, argv, "--twist_cmd", twist_command);
+    if(ret == 1){
+        sprintf(twist_command, "/usr/bin/pinhole");
+    }else if(ret == 2)
+    {
+        usage(argv[0]);
+    }
+
+
+    if(strcmp(twist_command, "none") != 0)
+    {
+        sprintf(twist_command, "%s &", twist_command);
+    }
+    
+    if(strcmp(shake_command, "none") != 0)
+    {
+        sprintf(shake_command, "%s &", shake_command);
+    }
+
+    //scan for IMU
+    if(find("/sys/bus/i2c/drivers/inv-mpu6050-i2c", "0068", IMU_path))
+    {
+        if(!find(IMU_path, "iio:device", IMU_path))
+        {
+            printf("could not find IMU path\n");
             return 1;
         }
     }else{
-        printf("could not find accel path\n");
+        printf("could not find IMU path\n");
         return 1;
     }
 
-    printf("%s\n", accel_path);
+    sprintf(gyro_x_path, "%s/in_anglvel_x_raw", IMU_path);
+    sprintf(accel_y_path, "%s/in_accel_y_raw", IMU_path);
 
-    bool flash_on = false; //flashlight state
-    int last_y_accel = ftoi(accel_path); //the last accel value, initialized to current accel value
+    //the last accel values, initialized to current accel value
+    int last_accel_y = ftoi(accel_y_path); 
+
     struct timeval start, now;
 	long mtime, seconds, useconds = 0; 
 
@@ -198,11 +256,13 @@ int main()
 
     //number of shakes detected. The phone must be shaken at least twice to enable the flashlight.
     int shakes = 0;
+    int twists = 0;
 	
     while(true)
     {
         //update accel value
-        int y_accel = ftoi(accel_path);
+        int gyro_x = ftoi(gyro_x_path);
+        int accel_y = ftoi(accel_y_path);
 
         gettimeofday(&now, NULL);
 
@@ -212,30 +272,40 @@ int main()
 		mtime = ((seconds) * 1000 + useconds/1000.0) + 0.5;
 
         //check for shake
-        if(abs(y_accel-last_y_accel) > THRESHOLD)
+        if(abs(accel_y-last_accel_y) > SHAKE_THRESHOLD)
         {
             gettimeofday(&start, NULL);
             shakes++;
             usleep(100000);
         }
 
+        if(abs(gyro_x) > TWIST_THRESHOLD)
+        {
+            gettimeofday(&start, NULL);
+            twists++;
+            usleep(100000);
+        }
+
         if(shakes >= 2)
         {
             shakes = 0;
-            flash_on = !flash_on;
+            printf(shake_command);
+            if(strcmp(shake_command, "none") != 0)
+                system(shake_command);
 
-            char brightness[2];
+            vibrate(200, 4000);
 
-            sprintf(brightness, "%d", flash_on);
+            //wait 1 second before continuing to avoid multiple detections
+            usleep(1000000);
+        }
 
-            int fd = open("/sys/devices/platform/led-controller/leds/white:flash/brightness", O_RDWR);
-
-            if(fd != NULL)
-            {
-                write(fd, brightness, strlen(brightness));
-            }
-
-            close(fd);
+        if(twists >= 2)
+        {
+            twists = 0;
+            
+            printf(twist_command);
+            if(strcmp(twist_command, "none") != 0)
+                system(twist_command);
 
             vibrate(200, 4000);
 
@@ -247,10 +317,11 @@ int main()
         if(mtime > 1000)
         {
             shakes = 0;
+            twists = 0;
         }
 
-        //printf("%d\n", abs(y_accel-last_y_accel) );
-        last_y_accel = y_accel;
+        //printf("%d\n", abs(accel_y-last_accel_y) );
+        last_accel_y = accel_y;
         usleep(25000);
     }
 }

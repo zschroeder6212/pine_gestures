@@ -7,10 +7,18 @@ else
 	CXX=aarch64-linux-gnu-g++
 endif
 
-all: shakelight
+all: pine_gestures toggleflash
 
-shakelight:
-	$(CXX) -o shakelight main.cpp
+install:
+	cp ./pine_gestures /usr/bin
+	cp ./toggleflash /usr/bin
+
+pine_gestures:
+	$(CXX) -o pine_gestures pine_gestures.cpp
+
+toggleflash:
+	$(CXX) -o toggleflash toggleflash.cpp
      
 clean:
-	rm shakelight
+	rm pine_gestures
+	rm toggleflash
