@@ -1,7 +1,7 @@
-#Summary
+##Summary
 A simple application for the pinephone to launch applications using gestures
 
-#Compiling
+##Compiling
 ```
 on phone or computer:
 	make
@@ -10,7 +10,7 @@ on phone:
 	sudo make install
 ```
 
-#Usage
+##Usage
 ```
 pine_gestures [--shake_cmd <cmd>] [--twist_cmd <cmd>];
 	--shake_cmd		path to cmd to be triggered by shake gesture or 'none' to disable. default: /usr/bin/toggleflash
