@@ -20,7 +20,7 @@ pine_gestures [--shake_cmd <cmd>] [--twist_cmd <cmd>];
 # Autostart
 Copy the service file to the systemd folder, ensure that you are in the pine_gestures directory
 ```
-sudo cp  gestures.service /etc/systemd/system/gestures.service
+sudo cp gestures.service /etc/systemd/system/gestures.service
 ```
 Then simple start the service with
 ```
