@@ -1,0 +1,9 @@
+[Unit]
+Description=Pine Gestures that will turn torch on when device is shaken
+After=default.target
+
+[Service]
+ExecStart=/home/mobian/pine_gestures/startup_gestures.sh
+
+[Install]
+WantedBy=default.target
