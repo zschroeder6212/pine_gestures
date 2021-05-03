@@ -1,5 +1,5 @@
 # Summary
-A simple application for the pinephone to launch applications using gestures. Note that the autostart only works on mobian.
+A simple application for the pinephone to launch applications using gestures. Not that the camera will not work when running as a service.
 
 # Compiling
 ```
@@ -11,22 +11,10 @@ on phone:
 ```
 
 # Usage
+To customize actions, simply edit /opt/pine_gestures/startup_gestures.sh using the command line arguments shown below.
+
 ```
 pine_gestures [--shake_cmd <cmd>] [--twist_cmd <cmd>];
 	--shake_cmd		path to cmd to be triggered by shake gesture or 'none' to disable. default: /usr/bin/toggleflash
-    --twist_cmd		path to cmd to be triggered by twist gesture or 'none' to disable. default: /usr/bin/pinhole
-```
-
-# Autostart
-Copy the service file to the systemd folder, ensure that you are in the pine_gestures directory
-```
-sudo cp gestures.service /etc/systemd/system/gestures.service
-```
-Then simple start the service with
-```
-sudo systemctl start gestures.service
-```
-And make sure it is active with
-```
-sudo systemctl status gestures.service
+	--twist_cmd		path to cmd to be triggered by twist gesture or 'none' to disable. default: /usr/bin/pinhole
 ```

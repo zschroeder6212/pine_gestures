@@ -190,7 +190,7 @@ void usage(char *name)
 {
     printf("Usage: %s [--shake_cmd <cmd>] [--twist_cmd <cmd>]\n");
     printf("\t--shake_cmd\tpath to cmd or 'none' to disable. default: /usr/bin/toggleflash\n");
-    printf("\t--twist_cmd\tpath to cmd or 'none' to disable. default: /usr/bin/pinhole\n");
+    printf("\t--twist_cmd\tpath to cmd or 'none' to disable. default: /usr/bin/megapixels\n");
     exit(1);
 }
 
@@ -203,8 +203,8 @@ int main(int argc, char **argv)
 
     int ret = get_arg(argc, argv, "--shake_cmd", shake_command);
 
-     if(ret == 1){
-        sprintf(shake_command, "/usr/bin/toggleflash");
+    if(ret == 1){
+        sprintf(shake_command, "none");
     }else if(ret == 2)
     {
         usage(argv[0]);
@@ -212,7 +212,7 @@ int main(int argc, char **argv)
 
     ret = get_arg(argc, argv, "--twist_cmd", twist_command);
     if(ret == 1){
-        sprintf(twist_command, "/usr/bin/pinhole");
+        sprintf(twist_command, "none");
     }else if(ret == 2)
     {
         usage(argv[0]);
