@@ -10,7 +10,7 @@ endif
 all: pine_gestures toggleflash
 
 install:
-	mkdir /opt/pine_gestures
+	mkdir -p /opt/pine_gestures
 	cp ./pine_gestures /usr/bin
 	cp ./toggleflash /usr/bin
 	cp ./startup_gestures.sh /opt/pine_gestures
