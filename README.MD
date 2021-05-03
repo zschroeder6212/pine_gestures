@@ -1,5 +1,5 @@
 # Summary
-A simple application for the pinephone to launch applications using gestures.
+A simple application for the pinephone to launch applications using gestures. Not that the camera will not work when running as a service.
 
 # Compiling
 ```
