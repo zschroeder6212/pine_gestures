@@ -14,6 +14,8 @@ install:
 	cp ./pine_gestures /usr/bin
 	cp ./toggleflash /usr/bin
 	cp ./startup_gestures.sh /opt/pine_gestures
+	systemctl enable gestures.service
+	systemctl start gestures.service
 
 pine_gestures:
 	$(CXX) -o pine_gestures pine_gestures.cpp
