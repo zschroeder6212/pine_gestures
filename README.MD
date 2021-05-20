@@ -1,3 +1,6 @@
+Pine_Gestures[![TravisCI](https://travis-ci.com/zschroeder6212/pine_gestures.svg?branch=master)](https://travis-ci.com/zschroeder6212/pine_gestures)
+==============================
+
 # Summary
 A simple application for the pinephone to launch applications using gestures. Note that the camera will not work when running as a service.
 

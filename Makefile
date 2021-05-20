@@ -28,10 +28,10 @@ uninstall:
 
 
 pine_gestures:
-	$(CXX) -o pine_gestures pine_gestures.cpp
+	$(CXX) -std=c++11 -o pine_gestures pine_gestures.cpp
 
 toggleflash:
-	$(CXX) -o toggleflash toggleflash.cpp
+	$(CXX) -std=c++11 -o toggleflash toggleflash.cpp
      
 clean:
 	rm pine_gestures
