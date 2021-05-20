@@ -1,0 +1,5 @@
+language: c++
+script: make
+before_install:
+  - sudo apt-get update
+  - sudo apt-get -y install gcc make gcc-arm-linux-gnueabi binutils-arm-linux-gnueabi
