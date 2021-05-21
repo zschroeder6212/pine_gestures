@@ -6,4 +6,5 @@ arch:
 os: linux
 before_install:
   - sudo apt-get update
-  - sudo apt-get -y install gcc make g++-aarch64-linux-gnu
+  - sudo apt-get -y install gcc make
+  - if [ "$(uname -m)" = "x86_64" ]; then sudo apt-get -y install g++-aarch64-linux-gnu; fi
